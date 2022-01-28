@@ -1,100 +1,70 @@
-#include <Preferences.h>
+// MODE  0 输入触发模式  1 Schedule模式    2 B门模式
+/*
+    Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleServer.cpp
+    Ported to Arduino ESP32 by Evandro Copercini
+    updates by chegewara
+*/
+
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
 #include <BLE2902.h>
 
+// See the following for generating UUIDs:
+// https://www.uuidgenerator.net/
+
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
-Preferences preferences;
+BLECharacteristic modeCs("ca73b3ba-39f6-4ab3-91ae-186dc9577d99", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+BLEDescriptor modeDs(BLEUUID((uint16_t)0x2903));
 
-unsigned int mode;
-unsigned int triggerTimes;
-bool deviceConnected = false;
+int testvalue = 0;
 
-BLEServer* pServer = NULL;
-BLECharacteristic* pCharacteristic = NULL;
-
-class MyServerCallbacks: public BLEServerCallbacks {
-    void onConnect(BLEServer* pServer) {
-      deviceConnected = true;
-      BLEDevice::startAdvertising();
-    };
-
-    void onDisconnect(BLEServer* pServer) {
-      deviceConnected = false;
-    }
-};
 
 class MyCallbacks: public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic *pCharacteristic){
-    std::string value = pCharacteristic->getValue();
-
-    if(value.length() > 0){
-
-      Serial.println("**********");
-      Serial.print("New value: ");
-      
-      for(int i=0; i < value.length(); i++){
-        Serial.print(value[i]);
-      }
-
-      Serial.println();
-      Serial.println("**********");
-      
-    }
+  void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string value = pCharacteristic->getValue();
+      Serial.print("Changed value = ");
+      //Serial.println(value.c_str());
+      testvalue = String(value.c_str()).toInt();
+      Serial.println(testvalue);
   }
 };
 
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(115200);  
-  preferences.begin("config", false);
-  mode = preferences.getUInt("mode", 0);  // MODE  0 输入触发模式  1 Schedule模式    2 B门模式
-  triggerTimes = preferences.getUInt("triggerTimes", 1);   // 0模式触发次数
+  Serial.begin(115200);
+  Serial.println("Starting BLE work!");
 
+  BLEDevice::init("Camsble");
+  BLEServer *pServer = BLEDevice::createServer();
+  BLEService *camsbleService = pServer->createService(SERVICE_UUID);
 
-  //-BLE----------------------------//
-  // Create the BLE Device
-    BLEDevice::init("Camsble");
+  camsbleService->addCharacteristic(&modeCs);
+  modeDs.setValue("Camsble Mode");
+  modeCs.addDescriptor(new BLE2902());
 
-    // Create the BLE Server
-    pServer = BLEDevice::createServer();
-    pServer->setCallbacks(new MyServerCallbacks());
+  // Start the service
+  camsbleService->start();
+  // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
+  pAdvertising->setMinPreferred(0x12);
 
-    // Create the BLE Service
-    BLEService *pService = pServer->createService(SERVICE_UUID);
+  modeCs.setCallbacks(new MyCallbacks());
 
-    // Create a BLE Characteristic
-    pCharacteristic = pService->createCharacteristic(
-                        CHARACTERISTIC_UUID,
-                        BLECharacteristic::PROPERTY_READ   |
-                        BLECharacteristic::PROPERTY_WRITE  |
-                        BLECharacteristic::PROPERTY_NOTIFY |
-                        BLECharacteristic::PROPERTY_INDICATE
-                      );
-
-    pCharacteristic->setCallbacks(new MyCallbacks());
-
-    // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
-    // Create a BLE Descriptor
-    pCharacteristic->addDescriptor(new BLE2902());
-
-    // Start the service
-    pService->start();
-
-    // Start advertising
-    BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-    pAdvertising->addServiceUUID(SERVICE_UUID);
-    pAdvertising->setScanResponse(false);
-    pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
-    BLEDevice::startAdvertising();
-    Serial.println("Waiting a client connection to notify...");
-  //
+  BLEDevice::startAdvertising();
+  Serial.println("Characteristic defined! Now you can read it in your phone!");
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //Serial.println(mode);
+  delay(200);
+  //char* sb = "sb";
+  testvalue++;
+  //String(millis()).toCharArray(sb,4);
+  modeCs.setValue(String(testvalue).c_str());
+  modeCs.notify();
 }
