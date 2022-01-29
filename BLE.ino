@@ -16,12 +16,66 @@ BLECharacteristic selfieDelayCs("62f876a1-fbe9-4524-b548-6c3d1df6c4ad", BLEChara
 //---------------------------------
 
 //---------------------------------   Callback -_,-
-class MyCallbacks: public BLECharacteristicCallbacks {
+class modeCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
       mode = String(value.c_str()).toInt();
       preferences.putInt("mode", mode);      
       Serial.println(String("Change Mode to:") + mode);
+  }
+};
+
+class triggerTimesCallbacks: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string value = pCharacteristic->getValue();
+      triggerTimes = String(value.c_str()).toInt();
+      preferences.putInt("triggerTimes", triggerTimes);      
+      Serial.println(String("Change triggerTimes to:") + triggerTimes);
+  }
+};
+
+class triggerDelayCallbacks: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string value = pCharacteristic->getValue();
+      triggerDelay = String(value.c_str()).toInt();
+      preferences.putInt("triggerDelay", triggerDelay);      
+      Serial.println(String("Change triggerDelay to:") + triggerDelay);
+  }
+};
+
+class interValCallbacks: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string value = pCharacteristic->getValue();
+      interVal = String(value.c_str()).toInt();
+      preferences.putInt("interVal", interVal);      
+      Serial.println(String("Change interVal to:") + interVal);
+  }
+};
+
+class scheduleCallbacks: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string value = pCharacteristic->getValue();
+      schedule = String(value.c_str()).toInt();
+      preferences.putInt("schedule", schedule);      
+      Serial.println(String("Change schedule to:") + schedule);
+  }
+};
+
+class bShutterCallbacks: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string value = pCharacteristic->getValue();
+      bShutter = String(value.c_str()).toInt();
+      preferences.putInt("bShutter", bShutter);      
+      Serial.println(String("Change bShutter to:") + bShutter);
+  }
+};
+
+class selfieDelayCallbacks: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string value = pCharacteristic->getValue();
+      selfieDelay = String(value.c_str()).toInt();
+      preferences.putInt("selfieDelay", selfieDelay);      
+      Serial.println(String("Change selfieDelay to:") + selfieDelay);
   }
 };
 //-----------------------------------
@@ -57,28 +111,31 @@ void initBLE(){
 
 // ----------------------- BLE init & notify -_,-
 
-  modeCs.setCallbacks(new MyCallbacks());
+  modeCs.setCallbacks(new modeCallbacks());
   modeCs.setValue(String(mode).c_str());
   modeCs.notify();
 
-  //triggerTimesCs.setCallbacks(new MyCallbacks());
+  triggerTimesCs.setCallbacks(new triggerTimesCallbacks());
   triggerTimesCs.setValue(String(triggerTimes).c_str());
   triggerTimesCs.notify();
 
-  //triggerDelayCs.setCallbacks(new MyCallbacks());
+  triggerDelayCs.setCallbacks(new triggerDelayCallbacks());
   triggerDelayCs.setValue(String(triggerDelay).c_str());
   triggerDelayCs.notify();
 
-  //interValCs.setCallbacks(new MyCallbacks());
+  interValCs.setCallbacks(new interValCallbacks());
   interValCs.setValue(String(interVal).c_str());
   interValCs.notify();
 
+  scheduleCs.setCallbacks(new scheduleCallbacks());
   scheduleCs.setValue(String(schedule).c_str());
   scheduleCs.notify();
 
+  bShutterCs.setCallbacks(new bShutterCallbacks());
   bShutterCs.setValue(String(bShutter).c_str());
   bShutterCs.notify();
 
+  selfieDelayCs.setCallbacks(new selfieDelayCallbacks());
   selfieDelayCs.setValue(String(selfieDelay).c_str());
   selfieDelayCs.notify();
 

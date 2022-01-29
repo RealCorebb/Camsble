@@ -33,6 +33,10 @@ void setup() {
   Serial.println("Characteristic defined! Now you can read it in your phone!");
 }
 
+void inputTrigger(){
+  
+}
+
 void loop() {
   // put your main code here, to run repeatedly:
   delay(500);
