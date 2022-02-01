@@ -5,6 +5,8 @@
 #include <BLE2902.h>
 #define SERVICE_UUID        "fc1d6c97-b334-45bd-ad8e-964cf37fba58"
 
+
+//---------------------------------
 BLECharacteristic modeCs("d6b1d851-f38b-4a40-ab1a-323dca8b59c0", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 BLECharacteristic triggerTimesCs("18a09d26-50df-4539-b0c5-5cc8190dfac3", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 BLECharacteristic triggerDelayCs("2286b0e0-0fd4-470d-b07d-c2a04cac41c3", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
@@ -12,8 +14,6 @@ BLECharacteristic interValCs("8d4f535a-ec08-4957-bde7-fe0d02fa235f", BLECharacte
 BLECharacteristic scheduleCs("f3ab231f-d13c-49bb-a2dc-94bfbb1237cf", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 BLECharacteristic bShutterCs("203e69eb-471b-40dc-8d75-7824e112165b", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 BLECharacteristic selfieDelayCs("62f876a1-fbe9-4524-b548-6c3d1df6c4ad", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-
-//---------------------------------
 
 //---------------------------------   Callback -_,-
 class modeCallbacks: public BLECharacteristicCallbacks {
@@ -91,13 +91,18 @@ void initBLE(){
 
   camsbleService->addCharacteristic(&modeCs);
   modeCs.addDescriptor(new BLE2902());
-  
   camsbleService->addCharacteristic(&triggerTimesCs);
+  triggerTimesCs.addDescriptor(new BLE2902());
   camsbleService->addCharacteristic(&triggerDelayCs);
+  triggerDelayCs.addDescriptor(new BLE2902());
   camsbleService->addCharacteristic(&interValCs);
+  interValCs.addDescriptor(new BLE2902());
   camsbleService->addCharacteristic(&scheduleCs);
+  scheduleCs.addDescriptor(new BLE2902());
   camsbleService->addCharacteristic(&bShutterCs);
+  bShutterCs.addDescriptor(new BLE2902());
   camsbleService->addCharacteristic(&selfieDelayCs);
+  selfieDelayCs.addDescriptor(new BLE2902());
 
   // Start the service
   camsbleService->start();
@@ -140,4 +145,9 @@ void initBLE(){
   selfieDelayCs.notify();
 
 //------------------------
+}
+
+void updateSchedule(int newVal){
+  scheduleCs.setValue(String(newVal).c_str());
+  scheduleCs.notify();  
 }

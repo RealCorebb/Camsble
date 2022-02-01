@@ -21,6 +21,8 @@ int selfieDelay;
 Ticker delayTimer;
 
 EasyButton inputButton(inputPIN);
+
+
 // -------------------------
 
 
@@ -76,7 +78,9 @@ void inputTrigger(){
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //delay(50);
+  delay(200);
+  schedule++;
+  updateSchedule(schedule);
   //Serial.println(digitalRead(3));
   //char* sb = "sb";
   //String(millis()).toCharArray(sb,4);
