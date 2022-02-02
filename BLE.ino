@@ -1,3 +1,5 @@
+bool isConnected = false;
+
 //---------------------------------   BLE -_,-
 #include <BLEDevice.h>
 #include <BLEUtils.h>
@@ -16,6 +18,15 @@ BLECharacteristic bShutterCs("203e69eb-471b-40dc-8d75-7824e112165b", BLECharacte
 BLECharacteristic selfieDelayCs("62f876a1-fbe9-4524-b548-6c3d1df6c4ad", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 
 //---------------------------------   Callback -_,-
+class MyServerCallbacks: public BLEServerCallbacks {
+  void onConnect(BLEServer* pServer) {      
+    isConnected = true;
+  };
+  void onDisconnect(BLEServer* pServer) {
+    isConnected = false;
+  }
+};
+
 class modeCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
@@ -148,6 +159,6 @@ void initBLE(){
 }
 
 void updateSchedule(int newVal){
-  scheduleCs.setValue(String(newVal).c_str());
+  //scheduleCs.setValue(String(newVal).c_str());
   scheduleCs.notify();  
 }
