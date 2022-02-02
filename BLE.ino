@@ -21,9 +21,12 @@ BLECharacteristic selfieDelayCs("62f876a1-fbe9-4524-b548-6c3d1df6c4ad", BLEChara
 class MyServerCallbacks: public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {      
     isConnected = true;
+    Serial.println("BLE Connected");
   };
   void onDisconnect(BLEServer* pServer) {
     isConnected = false;
+    Serial.println("BLE Disconnected");
+    BLEDevice::startAdvertising();
   }
 };
 
@@ -39,6 +42,7 @@ class modeCallbacks: public BLECharacteristicCallbacks {
 class triggerTimesCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
+      Serial.println(value.c_str());
       triggerTimes = String(value.c_str()).toInt();
       preferences.putInt("triggerTimes", triggerTimes);      
       Serial.println(String("Change triggerTimes to:") + triggerTimes);
@@ -98,6 +102,7 @@ void initBLE(){
   Serial.println("Starting BLE work!");
   BLEDevice::init("Camsble");
   BLEServer *pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
   BLEService *camsbleService = pServer->createService(BLEUUID(SERVICE_UUID),30,0);
 
   camsbleService->addCharacteristic(&modeCs);
