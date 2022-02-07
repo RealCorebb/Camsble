@@ -19,6 +19,7 @@ int bShutter;
 int selfieDelay;
 
 Ticker delayTimer;
+Ticker scheduleTimer;
 
 EasyButton inputButton(inputPIN);
 
@@ -78,11 +79,14 @@ void inputTrigger(){
 
 void loop() {
   // put your main code here, to run repeatedly:
-  delay(200);
-  schedule++;
+  //delay(200);
+  //schedule++;
   //updateSchedule(schedule);
   //Serial.println(digitalRead(3));
   //char* sb = "sb";
   //String(millis()).toCharArray(sb,4);
   inputButton.update();
+  if(mode == 2){
+    digitalWrite(shutterS1,HIGH);
+  }
 }
