@@ -23,9 +23,15 @@ Ticker scheduleTimer;
 
 EasyButton inputButton(inputPIN);
 
-
+#include "SSD1306Wire.h"
+#include "OLEDDisplayUi.h"
+#include "images.h"
+SSD1306Wire display(0x3c, 6, 7);
+OLEDDisplayUi ui ( &display );
 // -------------------------
 
+
+//-------------------
 
 void setup() {
   Serial.begin(115200);
@@ -54,6 +60,8 @@ void setup() {
   }
 
   Serial.println("Characteristic defined! Now you can read it in your phone!");
+
+  initScreen();
 }
 
 void inputISR()
@@ -85,8 +93,18 @@ void loop() {
   //Serial.println(digitalRead(3));
   //char* sb = "sb";
   //String(millis()).toCharArray(sb,4);
+  tickScreen();
   inputButton.update();
   if(mode == 2){
     digitalWrite(shutterS1,HIGH);
   }
 }
+
+//utils
+
+void changeModeUni(int mode){
+  preferences.putInt("mode", mode);      
+  Serial.println(String("Change Mode to:") + mode);
+  ui.transitionToFrame(mode);
+}
+

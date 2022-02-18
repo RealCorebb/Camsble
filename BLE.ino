@@ -7,7 +7,6 @@ bool isConnected = false;
 #include <BLE2902.h>
 #define SERVICE_UUID        "fc1d6c97-b334-45bd-ad8e-964cf37fba58"
 
-
 //---------------------------------
 BLECharacteristic modeCs("d6b1d851-f38b-4a40-ab1a-323dca8b59c0", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 BLECharacteristic triggerTimesCs("18a09d26-50df-4539-b0c5-5cc8190dfac3", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
@@ -33,9 +32,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
 class modeCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
-      mode = String(value.c_str()).toInt();
-      preferences.putInt("mode", mode);      
-      Serial.println(String("Change Mode to:") + mode);
+      changeModeUni(String(value.c_str()).toInt());
   }
 };
 
@@ -167,3 +164,4 @@ void updateSchedule(int newVal){
   //scheduleCs.setValue(String(newVal).c_str());
   scheduleCs.notify();  
 }
+
