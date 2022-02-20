@@ -8,7 +8,7 @@ Preferences preferences;
 
 #define shutterS1 10
 #define shutterS2 5
-#define inputPIN 19
+#define inputPIN 3
 //------------------------------- GLOBAL -_,-
 int mode;
 int triggerTimes;
@@ -29,8 +29,14 @@ EasyButton inputButton(inputPIN);
 SSD1306Wire display(0x3c, 6, 7);
 OLEDDisplayUi ui ( &display );
 // -------------------------
-
-
+#include <NeoPixelBus.h>
+NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(1, 8);
+#define colorSaturation 128
+RgbColor red(colorSaturation, 0, 0);
+RgbColor green(0, colorSaturation, 0);
+RgbColor blue(0, 0, colorSaturation);
+RgbColor white(colorSaturation);
+RgbColor black(0);
 //-------------------
 
 void setup() {
@@ -38,6 +44,9 @@ void setup() {
   
   pinMode(shutterS1,OUTPUT);
   pinMode(shutterS2,OUTPUT);
+
+  digitalWrite(shutterS1,HIGH);
+  digitalWrite(shutterS2,HIGH);
 
   preferences.begin("camsble", false);
   mode = preferences.getInt("mode", 0);
@@ -51,7 +60,7 @@ void setup() {
   inputButton.begin();
   inputButton.onPressedFor(0,inputTrigger);  
 
-  initBLE();
+  //initBLE();
 
   if (inputButton.supportsInterrupt())
   {
@@ -62,6 +71,11 @@ void setup() {
   Serial.println("Characteristic defined! Now you can read it in your phone!");
 
   initScreen();
+  Serial.println("initScreen Done");
+  strip.Begin();
+  strip.SetPixelColor(0, blue);
+  strip.Show();
+  Serial.println("Setup Done");
 }
 
 void inputISR()
@@ -95,16 +109,26 @@ void loop() {
   //String(millis()).toCharArray(sb,4);
   tickScreen();
   inputButton.update();
-  if(mode == 2){
-    digitalWrite(shutterS1,HIGH);
+  if(mode == 2){   
+    if(bShutter == 1){
+      digitalWrite(shutterS1,LOW);    
+      strip.SetPixelColor(0, red);
+      strip.Show();
+    }    
+    else{
+      digitalWrite(shutterS1,HIGH); 
+      strip.SetPixelColor(0, green);
+      strip.Show();
+    }
   }
 }
 
 //utils
 
-void changeModeUni(int mode){
-  preferences.putInt("mode", mode);      
-  Serial.println(String("Change Mode to:") + mode);
-  ui.transitionToFrame(mode);
+void changeModeUni(int newmode){
+  preferences.putInt("mode", newmode);      
+  Serial.println(String("Change Mode to:") + newmode);
+  mode = newmode;
+  ui.transitionToFrame(newmode);
 }
 
