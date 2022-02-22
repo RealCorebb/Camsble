@@ -17,15 +17,19 @@ int interVal;
 int schedule;
 int bShutter;
 int selfieDelay;
+int hasScreen = 0;
+int leftSec = 0;
 
 Ticker delayTimer;
 Ticker scheduleTimer;
 
 EasyButton inputButton(inputPIN);
+//EasyButton inputScreen(7,35,false,true);
 
 #include "SSD1306Wire.h"
 #include "OLEDDisplayUi.h"
 #include "images.h"
+#include "fonts.h"
 SSD1306Wire display(0x3c, 6, 7);
 OLEDDisplayUi ui ( &display );
 // -------------------------
@@ -40,6 +44,11 @@ RgbColor black(0);
 //-------------------
 
 void setup() {
+  Serial.println("initScreen Done");
+  strip.Begin();
+  strip.SetPixelColor(0, blue);
+  strip.Show();
+  Serial.println("Setup Done");
   Serial.begin(115200);
   
   pinMode(shutterS1,OUTPUT);
@@ -58,30 +67,30 @@ void setup() {
   selfieDelay = preferences.getInt("selfieDelay", 0);
 
   inputButton.begin();
+  //inputScreen.begin();
   inputButton.onPressedFor(0,inputTrigger);  
+  //inputScreen.onPressed(reconnectScreen); 
 
-  //initBLE();
+  initBLE();
 
-  if (inputButton.supportsInterrupt())
-  {
-    inputButton.enableInterrupt(inputISR);
-    Serial.println("Button will be used through interrupts");
-  }
-
+  inputButton.enableInterrupt(inputISR);
+  //inputScreen.enableInterrupt(screenISR);
   Serial.println("Characteristic defined! Now you can read it in your phone!");
 
+
+
   initScreen();
-  Serial.println("initScreen Done");
-  strip.Begin();
-  strip.SetPixelColor(0, blue);
-  strip.Show();
-  Serial.println("Setup Done");
+  
+
 }
 
 void inputISR()
 {
   //When button is being used through external interrupts, parameter INTERRUPT must be passed to read() function
   inputButton.read(); 
+}
+void screenISR(){
+  //inputScreen.read();
 }
 
 void triggerShutter(){
@@ -91,24 +100,35 @@ void triggerShutter(){
   digitalWrite(shutterS1,HIGH);
 }
 
+int triggerCount = 0;
 void inputTrigger(){
   if(mode == 0){
     Serial.println("Input Triggered");
-    delayTimer.once(triggerDelay,triggerShutter);
+    triggerCount++;
+    if(triggerCount >= triggerTimes){
+      delayTimer.once(triggerDelay,triggerShutter);
+      triggerCount = 0;
+    }
   }
 }
 
+unsigned long time_now = 0;
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  //delay(200);
-  //schedule++;
-  //updateSchedule(schedule);
-  //Serial.println(digitalRead(3));
-  //char* sb = "sb";
-  //String(millis()).toCharArray(sb,4);
+    
   tickScreen();
   inputButton.update();
+ // inputScreen.update();
+  if(mode == 1){
+    //更新倒计时
+    leftSec = ((interVal - (millis() - time_now))+999)/1000;
+   // Serial.println(leftSec);
+    if(millis() - time_now > interVal){
+      time_now = millis();
+      
+      triggerShutter();
+    }
+  }
   if(mode == 2){   
     if(bShutter == 1){
       digitalWrite(shutterS1,LOW);    
@@ -121,6 +141,11 @@ void loop() {
       strip.Show();
     }
   }
+ //Serial.print(digitalRead(6));
+ //Serial.println(digitalRead(7));
+  //delay(1000);
+
+  //ui.init();
 }
 
 //utils
@@ -130,5 +155,15 @@ void changeModeUni(int newmode){
   Serial.println(String("Change Mode to:") + newmode);
   mode = newmode;
   ui.transitionToFrame(newmode);
+}
+
+String readBattery(){
+  uint8_t percentage = 100;
+  float voltage = analogRead(4) / 4096.0 * 5.9;      // LOLIN D32 (no voltage divider need already fitted to board.or NODEMCU ESP32 with 100K+100K voltage divider
+  //Serial.println("Voltage = " + String(voltage));
+  percentage = 2808.3808 * pow(voltage, 4) - 43560.9157 * pow(voltage, 3) + 252848.5888 * pow(voltage, 2) - 650767.4615 * voltage + 626532.5703;
+  if (voltage > 4.19) percentage = 100;
+  else if (voltage <= 3.50) percentage = 0;
+  return String(percentage)+"%";
 }
 
