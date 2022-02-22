@@ -2,12 +2,17 @@
 // ------------------------- Screen -_,-
 
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
-  display->drawXbm(x + 42, y + 14, Mode_Logo_width, Mode_Logo_height, Mode_input_bits);
+  display->drawXbm(x + 30, y + 14, Mode_Logo_width, Mode_Logo_height, Mode_input_bits);
+  display->setFont(ArialMT_Plain_16);
+  display->drawString(84,23,String(triggerCount));
+  display->drawString(96, 29,String(triggerTimes));
+  display->setFont(ArialMT_Plain_24);
+  display->drawString(89,22,String("/"));
 }
 void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
-  display->drawXbm(x + 32, y + 14, Mode_Logo_width, Mode_Logo_height, Mode_schedule_bits);
+  display->drawXbm(x + 30, y + 14, Mode_Logo_width, Mode_Logo_height, Mode_schedule_bits);
   display->setFont(ArialMT_Plain_24);
-  display->drawString(90, 24,String(leftSec));
+  display->drawString(92, 23,String(leftSec));
 }
 void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   display->drawXbm(x + 42, y + 14, Mode_Logo_width, Mode_Logo_height, Mode_remote_bits);
