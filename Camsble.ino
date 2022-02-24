@@ -19,6 +19,7 @@ int bShutter;
 int selfieDelay;
 int hasScreen = 0;
 int leftSec = 0;
+int shutterCount = 0;
 
 Ticker delayTimer;
 Ticker scheduleTimer;
@@ -98,6 +99,7 @@ void triggerShutter(){
   digitalWrite(shutterS1,LOW);
   delay(50);
   digitalWrite(shutterS1,HIGH);
+  shutterCount++;
 }
 
 int triggerCount = 0;
@@ -154,6 +156,7 @@ void changeModeUni(int newmode){
   preferences.putInt("mode", newmode);      
   Serial.println(String("Change Mode to:") + newmode);
   mode = newmode;
+  shutterCount = 0;
   ui.transitionToFrame(newmode);
 }
 
@@ -164,6 +167,6 @@ String readBattery(){
   percentage = 2808.3808 * pow(voltage, 4) - 43560.9157 * pow(voltage, 3) + 252848.5888 * pow(voltage, 2) - 650767.4615 * voltage + 626532.5703;
   if (voltage > 4.19) percentage = 100;
   else if (voltage <= 3.50) percentage = 0;
-  return String(percentage)+"%";
+  return String(percentage);
 }
 

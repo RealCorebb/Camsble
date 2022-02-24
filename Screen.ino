@@ -20,7 +20,8 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
 void msOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->setFont(Open_Sans_Regular_8);
-  display->drawString(100, 54,readBattery());
+  display->drawString(100, 55,readBattery());
+  display->drawString(40, 55,String(shutterCount));
 }
 FrameCallback frames[] = { drawFrame1,drawFrame2,drawFrame3 };
 int frameCount = 3;
