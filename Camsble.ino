@@ -9,12 +9,15 @@ Preferences preferences;
 #define shutterS1 10
 #define shutterS2 5
 #define inputPIN 3
+#define buttonLPIN 0
+#define buttonRPIN 1
+#define MAXPAGE 2
 //------------------------------- GLOBAL -_,-
 int mode;
 int triggerTimes;
 int triggerDelay;
 int interVal;
-int schedule;
+int interValSwitch;
 int bShutter;
 int selfieDelay;
 int hasScreen = 0;
@@ -25,6 +28,8 @@ Ticker delayTimer;
 Ticker scheduleTimer;
 
 EasyButton inputButton(inputPIN);
+EasyButton inputButtonL(buttonLPIN);
+EasyButton inputButtonR(buttonRPIN);
 //EasyButton inputScreen(7,35,false,true);
 
 #include "SSD1306Wire.h"
@@ -49,8 +54,12 @@ void setup() {
   strip.Begin();
   strip.SetPixelColor(0, blue);
   strip.Show();
+
   Serial.println("Setup Done");
   Serial.begin(115200);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB
+  }
   
   pinMode(shutterS1,OUTPUT);
   pinMode(shutterS2,OUTPUT);
@@ -63,26 +72,28 @@ void setup() {
   triggerTimes = preferences.getInt("triggerTimes", 1);
   triggerDelay = preferences.getInt("triggerDelay", 0);
   interVal = preferences.getInt("interVal", 5000);
-  schedule = preferences.getInt("schedule", 0);
+  interValSwitch = preferences.getInt("interValSwitch", 0);
   bShutter = preferences.getInt("bShutter", 0);
   selfieDelay = preferences.getInt("selfieDelay", 0);
 
   inputButton.begin();
-  //inputScreen.begin();
+  inputButtonL.begin();
+  inputButtonR.begin();
   inputButton.onPressedFor(0,inputTrigger);  
-  //inputScreen.onPressed(reconnectScreen); 
+  inputButtonL.onPressedFor(0,prevPage);
+  inputButtonR.onPressedFor(0,nextPage);
 
   initBLE();
 
-  inputButton.enableInterrupt(inputISR);
-  //inputScreen.enableInterrupt(screenISR);
+  //inputButton.enableInterrupt(inputISR);
+  //inputButtonL.enableInterrupt(buttonLISR);
+  //inputButtonR.enableInterrupt(buttonRISR);
   Serial.println("Characteristic defined! Now you can read it in your phone!");
 
 
 
-  initScreen();
-  
-
+  //initScreen();
+  Serial.println("Setup Done");
 }
 
 void inputISR()
@@ -90,8 +101,11 @@ void inputISR()
   //When button is being used through external interrupts, parameter INTERRUPT must be passed to read() function
   inputButton.read(); 
 }
-void screenISR(){
-  //inputScreen.read();
+void buttonLISR(){
+  inputButtonL.read();
+}
+void buttonRISR(){
+  inputButtonR.read();
 }
 
 void triggerShutter(){
@@ -117,10 +131,16 @@ void inputTrigger(){
 unsigned long time_now = 0;
 
 void loop() {
-    
+  //Serial.println("loop");
+  /*
   tickScreen();
   inputButton.update();
- // inputScreen.update();
+  inputButtonL.update();
+  inputButtonR.update();
+  if(mode == 0){
+    strip.SetPixelColor(0, black);
+    strip.Show();
+  }
   if(mode == 1){
     //更新倒计时
     leftSec = ((interVal - (millis() - time_now))+999)/1000;
@@ -142,11 +162,11 @@ void loop() {
       strip.SetPixelColor(0, green);
       strip.Show();
     }
-  }
+  }*/
  //Serial.print(digitalRead(6));
- //Serial.println(digitalRead(7));
-  //delay(1000);
-
+ //Serial.println(digitalRead(7));*/
+  delay(5000);
+  bleTriggerShutter();
   //ui.init();
 }
 
@@ -167,6 +187,20 @@ String readBattery(){
   percentage = 2808.3808 * pow(voltage, 4) - 43560.9157 * pow(voltage, 3) + 252848.5888 * pow(voltage, 2) - 650767.4615 * voltage + 626532.5703;
   if (voltage > 4.19) percentage = 100;
   else if (voltage <= 3.50) percentage = 0;
-  return String(percentage);
+  return String(percentage)+"%";
+}
+
+void prevPage(){
+  Serial.println("prev Page");
+  int newmode = mode-1;
+  if(newmode<0) newmode = MAXPAGE;
+  changeModeUni(newmode);
+}
+
+void nextPage(){
+  Serial.println("next Page");
+  int newmode = mode+1;
+  if(newmode>MAXPAGE) newmode = 0;
+  changeModeUni(newmode);
 }
 

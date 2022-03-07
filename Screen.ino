@@ -4,10 +4,10 @@
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   display->drawXbm(x + 30, y + 14, Mode_Logo_width, Mode_Logo_height, Mode_input_bits);
   display->setFont(ArialMT_Plain_16);
-  display->drawString(84,23,String(triggerCount));
-  display->drawString(96, 29,String(triggerTimes));
+  display->drawString(84,24,String(triggerCount));
+  display->drawString(96, 30,String(triggerTimes));
   display->setFont(ArialMT_Plain_24);
-  display->drawString(89,22,String("/"));
+  display->drawString(89,23,String("/"));
 }
 void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   display->drawXbm(x + 30, y + 14, Mode_Logo_width, Mode_Logo_height, Mode_schedule_bits);
@@ -20,8 +20,14 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
 void msOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->setFont(Open_Sans_Regular_8);
-  display->drawString(100, 55,readBattery());
-  display->drawString(40, 55,String(shutterCount));
+  display->drawString(98, 54,readBattery());
+  if(shutterCount<10){
+    display->drawXbm(32, 56, Icon_width, Icon_height, Camera_bits);  
+    display->drawString(46, 54,String(shutterCount));
+  }
+  else{
+    display->drawString(42, 54,String(shutterCount));
+  }
 }
 FrameCallback frames[] = { drawFrame1,drawFrame2,drawFrame3 };
 int frameCount = 3;
