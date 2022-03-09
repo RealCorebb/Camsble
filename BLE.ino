@@ -17,6 +17,13 @@ bool isConnected = false;
 #define BLEAdvertising             NimBLEAdvertising
 #define BLEServer                  NimBLEServer
 
+#include "esp_ota_ops.h"
+#define FULL_PACKET 512
+#define CHARPOS_UPDATE_FLAG 5
+esp_ota_handle_t otaHandler = 0;
+bool updateFlag = false;
+bool readyFlag = false;
+
 //---------------------------------
 BLECharacteristic modeCs("d6b1d851-f38b-4a40-ab1a-323dca8b59c0", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
 BLECharacteristic triggerTimesCs("18a09d26-50df-4539-b0c5-5cc8190dfac3", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
@@ -26,6 +33,7 @@ BLECharacteristic interValSwitchCs("f3ab231f-d13c-49bb-a2dc-94bfbb1237cf", NIMBL
 BLECharacteristic bShutterCs("203e69eb-471b-40dc-8d75-7824e112165b", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
 BLECharacteristic selfieDelayCs("62f876a1-fbe9-4524-b548-6c3d1df6c4ad", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
 
+BLECharacteristic pOtaCharacteristic("a63d3ca7-2949-4173-802b-a0e6ee471ae0", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::WRITE);
 //--------------------------------- HID -_,-
 
 // Report IDs:
@@ -116,6 +124,40 @@ class selfieDelayCallbacks: public BLECharacteristicCallbacks {
  void onWrite(BLECharacteristic* me){
     uint8_t* value = (uint8_t*)(me->getValue().c_str());
     
+  }
+};
+
+
+class otaCallback: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic){
+    std::string rxData = pCharacteristic->getValue();
+    if (!updateFlag) { //If it's the first packet of OTA since bootup, begin OTA
+      Serial.println("BeginOTA");
+      esp_ota_begin(esp_ota_get_next_update_partition(NULL), OTA_SIZE_UNKNOWN, &otaHandler);
+      updateFlag = true;
+    }
+      if (rxData.length() > 0)
+      {
+        esp_ota_write(otaHandler, rxData.c_str(), rxData.length());
+        if (rxData.length() != FULL_PACKET)
+        {
+          esp_ota_end(otaHandler);
+          Serial.println("EndOTA");
+          if (ESP_OK == esp_ota_set_boot_partition(esp_ota_get_next_update_partition(NULL))) {
+            delay(2000);
+            esp_restart();
+          }
+          else {
+            Serial.println("Upload Error");
+          }
+        }
+      }
+    
+  
+    uint8_t txData[5] = {1, 2, 3, 4, 5};
+    //delay(1000);
+    pCharacteristic->setValue((uint8_t*)txData, 5);
+    pCharacteristic->notify();
   }
 };
 
@@ -272,5 +314,7 @@ void initBLE(){
   selfieDelayCs.setCallbacks(new selfieDelayCallbacks());
   selfieDelayCs.setValue(String(selfieDelay).c_str());
   selfieDelayCs.notify();
+
+  pOtaCharacteristic.setCallbacks(new otaCallback());
 //------------------------
 }
