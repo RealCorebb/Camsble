@@ -38,11 +38,9 @@ BLECharacteristic pOtaCharacteristic("a63d3ca7-2949-4173-802b-a0e6ee471ae0", NIM
 
 // Report IDs:
 #define KEYBOARD_ID 0x01
-#define MEDIA_KEYS_ID 0x02
 BLEHIDDevice* hid;
 BLECharacteristic* input;
 BLECharacteristic* output;
-BLECharacteristic* inputMediaKeys;
 
 
 //---------------------------------   Callback -_,-
@@ -198,24 +196,12 @@ static const uint8_t hidReportDescriptor[] = {
       END_COLLECTION(0)
     };
 
-typedef uint8_t MediaKeyReport[2];
-const MediaKeyReport KEY_MEDIA_VOLUME_DOWN = {64, 0};
 uint8_t buttons = 0;
 
 void bleTriggerShutter(){
   Serial.println("BLE Trigger Shutter");
-  /*
-  inputMediaKeys->setValue((uint8_t*)KEY_MEDIA_VOLUME_DOWN, sizeof(MediaKeyReport));
-  inputMediaKeys->notify();
-  uint8_t msg1[] = {0x0, 0x0, 0x0, 0x0,0x0,0x0,0x0,0x0};  
-
-      inputMediaKeys->setValue(msg1,sizeof(msg1));
-      inputMediaKeys->notify();
-
-      */
-
-    const char* hello = "Hello world from esp32 hid keyboard!!!\n";
-
+  
+    const char* hello = "\n";
     while(*hello){
       KEYMAP map = keymap[(uint8_t)*hello];
       uint8_t msg[] = {map.modifier || buttons, 0x0, map.usage, 0x0,0x0,0x0,0x0,0x0};
@@ -226,9 +212,8 @@ void bleTriggerShutter(){
 
       input->setValue(msg1,sizeof(msg1));
       input->notify();
-      delay(10);
     }  
-  
+
 }
 
 //---------------------------------- Init BLE -_,-
@@ -269,7 +254,6 @@ void initBLE(){
   hid = new BLEHIDDevice(pServer);
   input = hid->inputReport(1); // <-- input REPORTID from report map
   output = hid->outputReport(1); // <-- output REPORTID from report map
-  //inputMediaKeys = hid->inputReport(MEDIA_KEYS_ID);
 
   output->setCallbacks(new MyOutputCallbacks());
 
