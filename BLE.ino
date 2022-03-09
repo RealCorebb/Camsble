@@ -235,10 +235,11 @@ void bleTriggerShutter(){
 void initBLE(){
   
   Serial.println("Starting BLE work!");
-  BLEDevice::init("SBCamsble");
+  BLEDevice::init("bbCamsble");
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
   BLEService *camsbleService = pServer->createService(BLEUUID(SERVICE_UUID),30,0);
+  
 
   camsbleService->addCharacteristic(&modeCs);
   //modeCs.createDescriptor();
@@ -261,10 +262,9 @@ void initBLE(){
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setAppearance(HID_KEYBOARD);
   pAdvertising->setScanResponse(true);
-  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
-  pAdvertising->setMinPreferred(0x12);
-  BLEDevice::startAdvertising();
-
+  
+  //BLEDevice::startAdvertising();
+  
   //---------------------------  HID -_,-
   hid = new BLEHIDDevice(pServer);
   input = hid->inputReport(1); // <-- input REPORTID from report map
@@ -286,7 +286,7 @@ void initBLE(){
   camsbleService->start();
 
   // ----------------------- BLE init & notify -_,-
-
+  
   modeCs.setCallbacks(new modeCallbacks());
   modeCs.setValue(String(mode).c_str());
   modeCs.notify();
@@ -314,7 +314,10 @@ void initBLE(){
   selfieDelayCs.setCallbacks(new selfieDelayCallbacks());
   selfieDelayCs.setValue(String(selfieDelay).c_str());
   selfieDelayCs.notify();
+  
 
   pOtaCharacteristic.setCallbacks(new otaCallback());
+  pAdvertising->start();
+  Serial.println("Created Server");
 //------------------------
 }
