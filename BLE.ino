@@ -1,23 +1,30 @@
 bool isConnected = false;
 
 //---------------------------------   BLE -_,-
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
-#include <BLE2902.h>
-#include "BLEHIDDevice.h"
+#include <NimBLEDevice.h>
+#include <NimBLEServer.h>
+#include <NimBLEUtils.h>
+#include <NimBLEHIDDevice.h>
 #include "HIDTypes.h"
 #include "HIDKeyboardTypes.h"
 #define SERVICE_UUID        "45c424d1-adee-4a3d-b508-50d3acee84ad"
 
+#define BLEDevice                  NimBLEDevice
+#define BLEServerCallbacks         NimBLEServerCallbacks
+#define BLECharacteristicCallbacks NimBLECharacteristicCallbacks
+#define BLEHIDDevice               NimBLEHIDDevice
+#define BLECharacteristic          NimBLECharacteristic
+#define BLEAdvertising             NimBLEAdvertising
+#define BLEServer                  NimBLEServer
+
 //---------------------------------
-BLECharacteristic modeCs("d6b1d851-f38b-4a40-ab1a-323dca8b59c0", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-BLECharacteristic triggerTimesCs("18a09d26-50df-4539-b0c5-5cc8190dfac3", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-BLECharacteristic triggerDelayCs("2286b0e0-0fd4-470d-b07d-c2a04cac41c3", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-BLECharacteristic interValCs("8d4f535a-ec08-4957-bde7-fe0d02fa235f", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-BLECharacteristic interValSwitchCs("f3ab231f-d13c-49bb-a2dc-94bfbb1237cf", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-BLECharacteristic bShutterCs("203e69eb-471b-40dc-8d75-7824e112165b", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-BLECharacteristic selfieDelayCs("62f876a1-fbe9-4524-b548-6c3d1df6c4ad", BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+BLECharacteristic modeCs("d6b1d851-f38b-4a40-ab1a-323dca8b59c0", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+BLECharacteristic triggerTimesCs("18a09d26-50df-4539-b0c5-5cc8190dfac3", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+BLECharacteristic triggerDelayCs("2286b0e0-0fd4-470d-b07d-c2a04cac41c3", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+BLECharacteristic interValCs("8d4f535a-ec08-4957-bde7-fe0d02fa235f", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+BLECharacteristic interValSwitchCs("f3ab231f-d13c-49bb-a2dc-94bfbb1237cf", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+BLECharacteristic bShutterCs("203e69eb-471b-40dc-8d75-7824e112165b", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+BLECharacteristic selfieDelayCs("62f876a1-fbe9-4524-b548-6c3d1df6c4ad", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
 
 //--------------------------------- HID -_,-
 
@@ -192,19 +199,19 @@ void initBLE(){
   BLEService *camsbleService = pServer->createService(BLEUUID(SERVICE_UUID),30,0);
 
   camsbleService->addCharacteristic(&modeCs);
-  modeCs.addDescriptor(new BLE2902());
+  //modeCs.createDescriptor();
   camsbleService->addCharacteristic(&triggerTimesCs);
-  triggerTimesCs.addDescriptor(new BLE2902());
+  //triggerTimesCs.createDescriptor();
   camsbleService->addCharacteristic(&triggerDelayCs);
-  triggerDelayCs.addDescriptor(new BLE2902());
+  //triggerDelayCs.createDescriptor();
   camsbleService->addCharacteristic(&interValCs);
-  interValCs.addDescriptor(new BLE2902());
+  //interValCs.createDescriptor();
   camsbleService->addCharacteristic(&interValSwitchCs);
-  interValSwitchCs.addDescriptor(new BLE2902());
+  //interValSwitchCs.createDescriptor();
   camsbleService->addCharacteristic(&bShutterCs);
-  bShutterCs.addDescriptor(new BLE2902());
+  //bShutterCs.createDescriptor();
   camsbleService->addCharacteristic(&selfieDelayCs);
-  selfieDelayCs.addDescriptor(new BLE2902());
+  //selfieDelayCs.createDescriptor();
 
   
   // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
@@ -267,5 +274,3 @@ void initBLE(){
   selfieDelayCs.notify();
 //------------------------
 }
-
-

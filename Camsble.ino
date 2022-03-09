@@ -57,9 +57,6 @@ void setup() {
 
   Serial.println("Setup Done");
   Serial.begin(115200);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB
-  }
   
   pinMode(shutterS1,OUTPUT);
   pinMode(shutterS2,OUTPUT);
@@ -203,4 +200,3 @@ void nextPage(){
   if(newmode>MAXPAGE) newmode = 0;
   changeModeUni(newmode);
 }
-
