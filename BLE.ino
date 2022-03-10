@@ -24,6 +24,19 @@ esp_ota_handle_t otaHandler = 0;
 bool updateFlag = false;
 bool readyFlag = false;
 
+#define SOFTWARE_VERSION_MAJOR 0
+#define SOFTWARE_VERSION_MINOR 1
+#define SOFTWARE_VERSION_PATCH 0
+#define HARDWARE_VERSION_MAJOR 1
+#define HARDWARE_VERSION_MINOR 2
+#define SERVICE_UUID_ESPOTA        "d804b643-6ce7-4e81-9f8a-ce0f699085eb"
+#define CHARACTERISTIC_UUID_ID           "d804b644-6ce7-4e81-9f8a-ce0f699085eb"
+
+#define SERVICE_UUID_OTA                    "c8659210-af91-4ad3-a995-a58d6fd26145" // UART service UUID
+#define CHARACTERISTIC_UUID_FW              "c8659211-af91-4ad3-a995-a58d6fd26145"
+#define CHARACTERISTIC_UUID_HW_VERSION      "c8659212-af91-4ad3-a995-a58d6fd26145"
+
+
 //---------------------------------
 BLECharacteristic modeCs("d6b1d851-f38b-4a40-ab1a-323dca8b59c0", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
 BLECharacteristic triggerTimesCs("18a09d26-50df-4539-b0c5-5cc8190dfac3", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
@@ -33,7 +46,8 @@ BLECharacteristic interValSwitchCs("f3ab231f-d13c-49bb-a2dc-94bfbb1237cf", NIMBL
 BLECharacteristic bShutterCs("203e69eb-471b-40dc-8d75-7824e112165b", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
 BLECharacteristic selfieDelayCs("62f876a1-fbe9-4524-b548-6c3d1df6c4ad", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
 
-BLECharacteristic pOtaCharacteristic("a63d3ca7-2949-4173-802b-a0e6ee471ae0", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::WRITE);
+
+
 //--------------------------------- HID -_,-
 
 // Report IDs:
@@ -224,26 +238,40 @@ void initBLE(){
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
   BLEService *camsbleService = pServer->createService(BLEUUID(SERVICE_UUID),30,0);
-  
+  BLEService *pESPOTAService = pServer->createService(BLEUUID(SERVICE_UUID_ESPOTA),30,0);
+  BLEService *pService = pServer->createService(BLEUUID(SERVICE_UUID_OTA),30,0);
+
+  // Create a BLE Characteristic
+
+
 
   camsbleService->addCharacteristic(&modeCs);
-  //modeCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&triggerTimesCs);
-  //triggerTimesCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&triggerDelayCs);
-  //triggerDelayCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&interValCs);
-  //interValCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&interValSwitchCs);
-  //interValSwitchCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&bShutterCs);
-  //bShutterCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&selfieDelayCs);
-  //selfieDelayCs.createDescriptor(“2904”);
 
+// Create a BLE Characteristic
+  BLECharacteristic *pESPOTAIdCharacteristic = pESPOTAService->createCharacteristic(
+                                       CHARACTERISTIC_UUID_ID,
+                                       NIMBLE_PROPERTY::READ
+                                     );
+
+  BLECharacteristic *pVersionCharacteristic = pService->createCharacteristic(
+                             CHARACTERISTIC_UUID_HW_VERSION,
+                             NIMBLE_PROPERTY::READ
+                           );
+
+  BLECharacteristic *pOtaCharacteristic = pService->createCharacteristic(
+                         CHARACTERISTIC_UUID_FW,
+                         NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::WRITE
+                       );
   
   // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setAppearance(HID_KEYBOARD);
   pAdvertising->setScanResponse(true);
@@ -268,6 +296,8 @@ void initBLE(){
 
   // Start the service
   camsbleService->start();
+  pESPOTAService->start();
+  pService->start();
 
   // ----------------------- BLE init & notify -_,-
   
@@ -299,9 +329,15 @@ void initBLE(){
   selfieDelayCs.setValue(std::string(String(selfieDelay).c_str()));
   selfieDelayCs.notify();
   
+  pOtaCharacteristic->setCallbacks(new otaCallback());
 
-  pOtaCharacteristic.setCallbacks(new otaCallback());
+  uint8_t hardwareVersion[5] = {HARDWARE_VERSION_MAJOR, HARDWARE_VERSION_MINOR, SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_PATCH};
+  pVersionCharacteristic->setValue((uint8_t*)hardwareVersion, 5);
+
   pAdvertising->start();
+  // Start the service(s)
+
   Serial.println("Created Server");
+  
 //------------------------
 }
