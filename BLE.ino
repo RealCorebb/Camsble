@@ -7,7 +7,7 @@ bool isConnected = false;
 #include <NimBLEHIDDevice.h>
 #include "HIDTypes.h"
 #include "HIDKeyboardTypes.h"
-#define SERVICE_UUID        "45c424d1-adee-4a3d-b508-50d3acee84ad"
+#define SERVICE_UUID        "fc1d6c97-b334-45bd-ad8e-964cf37fba58"
 
 #define BLEDevice                  NimBLEDevice
 #define BLEServerCallbacks         NimBLEServerCallbacks
@@ -227,19 +227,19 @@ void initBLE(){
   
 
   camsbleService->addCharacteristic(&modeCs);
-  //modeCs.createDescriptor();
+  //modeCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&triggerTimesCs);
-  //triggerTimesCs.createDescriptor();
+  //triggerTimesCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&triggerDelayCs);
-  //triggerDelayCs.createDescriptor();
+  //triggerDelayCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&interValCs);
-  //interValCs.createDescriptor();
+  //interValCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&interValSwitchCs);
-  //interValSwitchCs.createDescriptor();
+  //interValSwitchCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&bShutterCs);
-  //bShutterCs.createDescriptor();
+  //bShutterCs.createDescriptor(“2904”);
   camsbleService->addCharacteristic(&selfieDelayCs);
-  //selfieDelayCs.createDescriptor();
+  //selfieDelayCs.createDescriptor(“2904”);
 
   
   // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
@@ -272,31 +272,31 @@ void initBLE(){
   // ----------------------- BLE init & notify -_,-
   
   modeCs.setCallbacks(new modeCallbacks());
-  modeCs.setValue(String(mode).c_str());
+  modeCs.setValue(std::string(String(mode).c_str()));
   modeCs.notify();
 
   triggerTimesCs.setCallbacks(new triggerTimesCallbacks());
-  triggerTimesCs.setValue(String(triggerTimes).c_str());
+  triggerTimesCs.setValue(std::string(String(triggerTimes).c_str()));
   triggerTimesCs.notify();
 
   triggerDelayCs.setCallbacks(new triggerDelayCallbacks());
-  triggerDelayCs.setValue(String(triggerDelay).c_str());
+  triggerDelayCs.setValue(std::string(String(triggerDelay).c_str()));
   triggerDelayCs.notify();
 
   interValCs.setCallbacks(new interValCallbacks());
-  interValCs.setValue(String(interVal).c_str());
+  interValCs.setValue(std::string(String(interVal).c_str()));
   interValCs.notify();
 
   interValSwitchCs.setCallbacks(new interValSwitchCsCallbacks());
-  interValSwitchCs.setValue(String(interValSwitch).c_str());
+  interValSwitchCs.setValue(std::string(String(interValSwitch).c_str()));
   interValSwitchCs.notify();
 
   bShutterCs.setCallbacks(new bShutterCallbacks());
-  bShutterCs.setValue(String(bShutter).c_str());
+  bShutterCs.setValue(std::string(String(bShutter).c_str()));
   bShutterCs.notify();
 
   selfieDelayCs.setCallbacks(new selfieDelayCallbacks());
-  selfieDelayCs.setValue(String(selfieDelay).c_str());
+  selfieDelayCs.setValue(std::string(String(selfieDelay).c_str()));
   selfieDelayCs.notify();
   
 

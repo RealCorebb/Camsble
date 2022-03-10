@@ -55,7 +55,7 @@ void setup() {
   strip.SetPixelColor(0, blue);
   strip.Show();
 
-  Serial.println("Setup Done");
+  Serial.println("Setup...");
   Serial.begin(115200);
   
   pinMode(shutterS1,OUTPUT);
@@ -82,15 +82,16 @@ void setup() {
 
   initBLE();
 
-  //inputButton.enableInterrupt(inputISR);
-  //inputButtonL.enableInterrupt(buttonLISR);
-  //inputButtonR.enableInterrupt(buttonRISR);
+  inputButton.enableInterrupt(inputISR);
+  inputButtonL.enableInterrupt(buttonLISR);
+  inputButtonR.enableInterrupt(buttonRISR);
   Serial.println("Characteristic defined! Now you can read it in your phone!");
 
 
 
-  //initScreen();
+  initScreen();
   Serial.println("Setup Done");
+  Serial.println(mode);
 }
 
 void inputISR()
@@ -108,6 +109,7 @@ void buttonRISR(){
 void triggerShutter(){
   Serial.println("Shutter Triggered");
   digitalWrite(shutterS1,LOW);
+  bleTriggerShutter();
   delay(50);
   digitalWrite(shutterS1,HIGH);
   shutterCount++;
@@ -129,7 +131,7 @@ unsigned long time_now = 0;
 
 void loop() {
   //Serial.println("loop");
-  /*
+  
   tickScreen();
   inputButton.update();
   inputButtonL.update();
@@ -159,12 +161,9 @@ void loop() {
       strip.SetPixelColor(0, green);
       strip.Show();
     }
-  }*/
+  }
  //Serial.print(digitalRead(6));
- //Serial.println(digitalRead(7));*/
-  delay(5000);
-  bleTriggerShutter();
-  //ui.init();
+ //Serial.println(digitalRead(7));
 }
 
 //utils
