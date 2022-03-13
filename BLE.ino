@@ -26,7 +26,7 @@ bool readyFlag = false;
 
 #define SOFTWARE_VERSION_MAJOR 0
 #define SOFTWARE_VERSION_MINOR 1
-#define SOFTWARE_VERSION_PATCH 1
+#define SOFTWARE_VERSION_PATCH 2
 #define HARDWARE_VERSION_MAJOR 1
 #define HARDWARE_VERSION_MINOR 2
 #define SERVICE_UUID_ESPOTA        "d804b643-6ce7-4e81-9f8a-ce0f699085eb"
@@ -213,7 +213,8 @@ static const uint8_t hidReportDescriptor[] = {
 uint8_t buttons = 0;
 
 void bleTriggerShutter(){
-  Serial.println("BLE Trigger Shutter");
+  if(isConnected){
+    Serial.println("BLE Trigger Shutter");
   
     const char* hello = "\n";
     while(*hello){
@@ -227,7 +228,7 @@ void bleTriggerShutter(){
       input->setValue(msg1,sizeof(msg1));
       input->notify();
     }  
-
+  }
 }
 
 //---------------------------------- Init BLE -_,-

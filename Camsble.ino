@@ -25,6 +25,7 @@ int leftSec = 0;
 int shutterCount = 0;
 
 Ticker delayTimer;
+Ticker triggerTimer;
 Ticker scheduleTimer;
 
 EasyButton inputButton(inputPIN);
@@ -106,14 +107,18 @@ void buttonRISR(){
   inputButtonR.read();
 }
 
+void unPressShutter(){
+  digitalWrite(shutterS1,HIGH);
+}
+
 void triggerShutter(){
   Serial.println("Shutter Triggered");
   digitalWrite(shutterS1,LOW);
+  triggerTimer.once(50,unPressShutter);
   bleTriggerShutter();
-  delay(50);
-  digitalWrite(shutterS1,HIGH);
   shutterCount++;
 }
+
 
 int triggerCount = 0;
 void inputTrigger(){
