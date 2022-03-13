@@ -114,7 +114,7 @@ void unPressShutter(){
 void triggerShutter(){
   Serial.println("Shutter Triggered");
   digitalWrite(shutterS1,LOW);
-  triggerTimer.once(50,unPressShutter);
+  triggerTimer.once_ms(50,unPressShutter);
   bleTriggerShutter();
   shutterCount++;
 }
@@ -126,7 +126,7 @@ void inputTrigger(){
     Serial.println("Input Triggered");
     triggerCount++;
     if(triggerCount >= triggerTimes){
-      delayTimer.once(triggerDelay,triggerShutter);
+      delayTimer.once_ms(triggerDelay,triggerShutter);
       triggerCount = 0;
     }
   }
