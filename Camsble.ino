@@ -39,7 +39,7 @@ Button2 buttonA, buttonB;
 #include "OLEDDisplayUi.h"
 #include "images.h"
 #include "fonts.h"
-SSD1306Wire display(0x3c, 6, 7);
+SSD1306Wire display(0x3c, 7, 6);
 OLEDDisplayUi ui ( &display );
 // -------------------------
 #include <NeoPixelBus.h>
