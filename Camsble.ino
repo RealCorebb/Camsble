@@ -2,15 +2,17 @@
 
 #include <Preferences.h>
 #include <Ticker.h>
-#include <EasyButton.h>
+#include "Button2.h"
 
 Preferences preferences;
 
 #define shutterS1 10
 #define shutterS2 5
-#define inputPIN 3
-#define buttonLPIN 0
-#define buttonRPIN 1
+
+#define BUTTON_A_PIN  0
+#define BUTTON_B_PIN  1
+#define INPUT_PIN  3
+
 #define MAXPAGE 2
 //------------------------------- GLOBAL -_,-
 int mode;
@@ -23,14 +25,14 @@ int selfieDelay;
 int hasScreen = 0;
 int leftSec = 0;
 int shutterCount = 0;
+int isBLEEnable = 0;
+byte counter = 0;
 
 Ticker delayTimer;
 Ticker triggerTimer;
 Ticker scheduleTimer;
 
-EasyButton inputButton(inputPIN);
-EasyButton inputButtonL(buttonLPIN);
-EasyButton inputButtonR(buttonRPIN);
+Button2 buttonA, buttonB;
 //EasyButton inputScreen(7,35,false,true);
 
 #include "SSD1306Wire.h"
@@ -46,11 +48,14 @@ NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(1, 8);
 RgbColor red(colorSaturation, 0, 0);
 RgbColor green(0, colorSaturation, 0);
 RgbColor blue(0, 0, colorSaturation);
+RgbColor purple(90, 28, 117);
+RgbColor yellow(117, 116, 19);
 RgbColor white(colorSaturation);
 RgbColor black(0);
 //-------------------
 
 void setup() {
+  setCpuFrequencyMhz(80);
   Serial.println("initScreen Done");
   strip.Begin();
   strip.SetPixelColor(0, blue);
@@ -61,6 +66,7 @@ void setup() {
   
   pinMode(shutterS1,OUTPUT);
   pinMode(shutterS2,OUTPUT);
+  pinMode(INPUT_PIN,INPUT_PULLUP);
 
   digitalWrite(shutterS1,HIGH);
   digitalWrite(shutterS2,HIGH);
@@ -74,47 +80,43 @@ void setup() {
   bShutter = preferences.getInt("bShutter", 0);
   selfieDelay = preferences.getInt("selfieDelay", 0);
 
-  inputButton.begin();
-  inputButtonL.begin();
-  inputButtonR.begin();
-  inputButton.onPressedFor(0,inputTrigger);  
-  inputButtonL.onPressedFor(0,prevPage);
-  inputButtonR.onPressedFor(0,nextPage);
+  buttonA.begin(BUTTON_A_PIN,INPUT_PULLUP);
+  buttonA.setClickHandler(handler);
+  buttonB.begin(BUTTON_B_PIN,INPUT_PULLUP);
+  buttonB.setClickHandler(handler);
+  buttonA.setPressedHandler(pressed);
+  buttonA.setReleasedHandler(released);
+  buttonB.setPressedHandler(pressed);
+  buttonB.setReleasedHandler(released);  
 
-  initBLE();
+  attachInterrupt(INPUT_PIN,inputTrigger,FALLING);
 
-  inputButton.enableInterrupt(inputISR);
-  inputButtonL.enableInterrupt(buttonLISR);
-  inputButtonR.enableInterrupt(buttonRISR);
-  Serial.println("Characteristic defined! Now you can read it in your phone!");
-
-
+  //initBLE();
 
   initScreen();
   Serial.println("Setup Done");
   Serial.println(mode);
 }
 
-void inputISR()
-{
-  //When button is being used through external interrupts, parameter INTERRUPT must be passed to read() function
-  inputButton.read(); 
-}
-void buttonLISR(){
-  inputButtonL.read();
-}
-void buttonRISR(){
-  inputButtonR.read();
-}
 
 void unPressShutter(){
   digitalWrite(shutterS1,HIGH);
+  if(mode == 0){
+    strip.SetPixelColor(0, blue);
+    strip.Show();
+  }
+  if(mode == 1){
+    strip.SetPixelColor(0, purple);
+    strip.Show();
+  }
 }
 
-void triggerShutter(){
+void triggerShutter(){  
   Serial.println("Shutter Triggered");
+  strip.SetPixelColor(0, red);
+  strip.Show();
   digitalWrite(shutterS1,LOW);
-  triggerTimer.once_ms(50,unPressShutter);
+  triggerTimer.once_ms(100,unPressShutter);
   bleTriggerShutter();
   shutterCount++;
 }
@@ -122,7 +124,12 @@ void triggerShutter(){
 
 int triggerCount = 0;
 void inputTrigger(){
-  if(mode == 0){
+  static unsigned long last_interrupt_time = 0;
+  unsigned long interrupt_time = millis();
+  // If interrupts come faster than 200ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 100) 
+  {
+    if(mode == 0){
     Serial.println("Input Triggered");
     triggerCount++;
     if(triggerCount >= triggerTimes){
@@ -130,6 +137,9 @@ void inputTrigger(){
       triggerCount = 0;
     }
   }
+  }
+  last_interrupt_time = interrupt_time;
+  
 }
 
 unsigned long time_now = 0;
@@ -138,20 +148,21 @@ void loop() {
   //Serial.println("loop");
   
   tickScreen();
-  inputButton.update();
-  inputButtonL.update();
-  inputButtonR.update();
+  buttonA.loop();
+  buttonB.loop();
   if(mode == 0){
-    strip.SetPixelColor(0, black);
-    strip.Show();
+    
   }
   if(mode == 1){
     //更新倒计时
     leftSec = ((interVal - (millis() - time_now))+999)/1000;
    // Serial.println(leftSec);
+    if(leftSec < 3){
+      strip.SetPixelColor(0, yellow);
+      strip.Show();
+    }
     if(millis() - time_now > interVal){
       time_now = millis();
-      
       triggerShutter();
     }
   }
@@ -178,6 +189,14 @@ void changeModeUni(int newmode){
   Serial.println(String("Change Mode to:") + newmode);
   mode = newmode;
   shutterCount = 0;
+  if(mode == 0){
+    strip.SetPixelColor(0, blue);
+    strip.Show();
+  }
+  if(mode == 1){
+    strip.SetPixelColor(0, purple);
+    strip.Show();
+  }
   ui.transitionToFrame(newmode);
 }
 
@@ -189,6 +208,27 @@ String readBattery(){
   if (voltage > 4.19) percentage = 100;
   else if (voltage <= 3.50) percentage = 0;
   return String(percentage)+"%";
+}
+
+void handler(Button2& btn) {
+    Serial.println("Button Click");
+    switch (btn.getClickType()) {
+        case SINGLE_CLICK:
+            if (btn == buttonA) {
+              prevPage();
+            } else if (btn == buttonB) {
+              nextPage();
+            }
+            break;
+        case DOUBLE_CLICK:
+            Serial.print("double ");
+            break;
+        case TRIPLE_CLICK:
+            Serial.print("triple ");
+            break;
+        case LONG_CLICK:
+            break;
+    }
 }
 
 void prevPage(){
@@ -204,3 +244,24 @@ void nextPage(){
   if(newmode>MAXPAGE) newmode = 0;
   changeModeUni(newmode);
 }
+
+void changeBLE(){
+  Serial.println("Change BLE");
+  if(isBLEEnable == 0) initBLE();
+  else deinitBLE();  
+}
+
+void pressed(Button2& btn) {
+  counter++;
+  if (counter == 2) {
+    changeBLE();
+  }
+}
+
+
+/////////////////////////////////////////////////////////////////
+
+void released(Button2& btn) {
+  counter--;
+}
+

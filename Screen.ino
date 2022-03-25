@@ -51,6 +51,8 @@ void initScreen(){
   ui.disableAutoTransition();
   // Initialising the UI will init the display too.
   ui.init();
+  Serial.print("UI Trans to");
+  Serial.println(mode);
   ui.transitionToFrame(mode);
   display.flipScreenVertically();
   hasScreen = 1;

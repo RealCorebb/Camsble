@@ -236,6 +236,7 @@ void initBLE(){
   
   Serial.println("Starting BLE work!");
   BLEDevice::init("bbCamsble");
+  BLEDevice::setPower(ESP_PWR_LVL_N0);
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
   BLEService *camsbleService = pServer->createService(BLEUUID(SERVICE_UUID),30,0);
@@ -275,7 +276,7 @@ void initBLE(){
 
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setAppearance(HID_KEYBOARD);
-  pAdvertising->setScanResponse(true);
+  pAdvertising->setScanResponse(false);
   
   //BLEDevice::startAdvertising();
   
@@ -339,6 +340,11 @@ void initBLE(){
   // Start the service(s)
 
   Serial.println("Created Server");
-  
+  isBLEEnable = 1;
 //------------------------
+}
+
+void deinitBLE(){
+  BLEDevice::deinit(false);
+  isBLEEnable = 0;
 }
