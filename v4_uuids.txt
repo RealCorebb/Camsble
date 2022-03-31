@@ -6,7 +6,7 @@ d6b1d851-f38b-4a40-ab1a-323dca8b59c0   #modeCs
 8d4f535a-ec08-4957-bde7-fe0d02fa235f   #interValCs
 f3ab231f-d13c-49bb-a2dc-94bfbb1237cf   #interValSwitchCs
 203e69eb-471b-40dc-8d75-7824e112165b   #bShutterCs
-62f876a1-fbe9-4524-b548-6c3d1df6c4ad   #selfieDelayCs
+62f876a1-fbe9-4524-b548-6c3d1df6c4ad   #inputModeCs
 
 a63d3ca7-2949-4173-802b-a0e6ee471ae0   
 c748dc8e-e270-430c-91f8-ce9b69d71d55   

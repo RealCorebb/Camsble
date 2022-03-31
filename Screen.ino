@@ -20,7 +20,7 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
 void msOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->setFont(Open_Sans_Regular_8);
-  display->drawString(98, 54,readBattery());
+  display->drawString(98, 54, batteryStatus);
   if(shutterCount<10){
     display->drawXbm(32, 56, Icon_width, Icon_height, Camera_bits);  
     display->drawString(46, 54,String(shutterCount));

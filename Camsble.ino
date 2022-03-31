@@ -31,6 +31,7 @@ byte counter = 0;
 Ticker delayTimer;
 Ticker triggerTimer;
 Ticker scheduleTimer;
+Ticker batteryTimer;
 
 Button2 buttonA, buttonB;
 //EasyButton inputScreen(7,35,false,true);
@@ -94,7 +95,8 @@ void setup() {
   setInputInterrupt(inputMode);
 
   //initBLE();
-
+  readBattery();
+  batteryTimer.attach_ms(60000, readBattery);
   initScreen();
   Serial.println("Setup Done");
   Serial.println(mode);
@@ -209,14 +211,19 @@ void changeModeUni(int newmode){
   ui.transitionToFrame(newmode);
 }
 
-String readBattery(){
+
+unsigned long last_battery_time = 0;
+
+String batteryStatus = "100%";
+
+void readBattery(){
   uint8_t percentage = 100;
   float voltage = analogRead(4) / 4096.0 * 5.9;      // LOLIN D32 (no voltage divider need already fitted to board.or NODEMCU ESP32 with 100K+100K voltage divider
-  //Serial.println("Voltage = " + String(voltage));
+  Serial.println("Voltage = " + String(voltage));
   percentage = 2808.3808 * pow(voltage, 4) - 43560.9157 * pow(voltage, 3) + 252848.5888 * pow(voltage, 2) - 650767.4615 * voltage + 626532.5703;
   if (voltage > 4.19) percentage = 100;
   else if (voltage <= 3.50) percentage = 0;
-  return String(percentage)+"%";
+  batteryStatus = String(percentage)+"%";
 }
 
 void handler(Button2& btn) {
@@ -224,13 +231,17 @@ void handler(Button2& btn) {
     switch (btn.getClickType()) {
         case SINGLE_CLICK:
             if (btn == buttonA) {
+              
+            } else if (btn == buttonB) {
+              
+            }
+            break;
+        case DOUBLE_CLICK:
+            if (btn == buttonA) {
               prevPage();
             } else if (btn == buttonB) {
               nextPage();
             }
-            break;
-        case DOUBLE_CLICK:
-            Serial.print("double ");
             break;
         case TRIPLE_CLICK:
             Serial.print("triple ");
