@@ -44,7 +44,7 @@ BLECharacteristic triggerDelayCs("2286b0e0-0fd4-470d-b07d-c2a04cac41c3", NIMBLE_
 BLECharacteristic interValCs("8d4f535a-ec08-4957-bde7-fe0d02fa235f", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
 BLECharacteristic interValSwitchCs("f3ab231f-d13c-49bb-a2dc-94bfbb1237cf", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
 BLECharacteristic bShutterCs("203e69eb-471b-40dc-8d75-7824e112165b", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
-BLECharacteristic selfieDelayCs("62f876a1-fbe9-4524-b548-6c3d1df6c4ad", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
+BLECharacteristic inputModeCs("62f876a1-fbe9-4524-b548-6c3d1df6c4ad", NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE);
 
 
 
@@ -123,12 +123,12 @@ class bShutterCallbacks: public BLECharacteristicCallbacks {
   }
 };
 
-class selfieDelayCallbacks: public BLECharacteristicCallbacks {
+class inputModeCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
       std::string value = pCharacteristic->getValue();
-      selfieDelay = String(value.c_str()).toInt();
-      preferences.putInt("selfieDelay", selfieDelay);      
-      Serial.println(String("Change selfieDelay to:") + selfieDelay);
+      inputMode = String(value.c_str()).toInt();
+      preferences.putInt("inputMode", inputMode);      
+      Serial.println(String("Change inputMode to:") + inputMode);
   }
 };
 
@@ -253,7 +253,7 @@ void initBLE(){
   camsbleService->addCharacteristic(&interValCs);
   camsbleService->addCharacteristic(&interValSwitchCs);
   camsbleService->addCharacteristic(&bShutterCs);
-  camsbleService->addCharacteristic(&selfieDelayCs);
+  camsbleService->addCharacteristic(&inputModeCs);
 
 // Create a BLE Characteristic
   BLECharacteristic *pESPOTAIdCharacteristic = pESPOTAService->createCharacteristic(
@@ -327,9 +327,9 @@ void initBLE(){
   bShutterCs.setValue(std::string(String(bShutter).c_str()));
   bShutterCs.notify();
 
-  selfieDelayCs.setCallbacks(new selfieDelayCallbacks());
-  selfieDelayCs.setValue(std::string(String(selfieDelay).c_str()));
-  selfieDelayCs.notify();
+  inputModeCs.setCallbacks(new inputModeCallbacks());
+  inputModeCs.setValue(std::string(String(inputMode).c_str()));
+  inputModeCs.notify();
   
   pOtaCharacteristic->setCallbacks(new otaCallback());
 

@@ -21,7 +21,7 @@ int triggerDelay;
 int interVal;
 int interValSwitch;
 int bShutter;
-int selfieDelay;
+int inputMode;
 int hasScreen = 0;
 int leftSec = 0;
 int shutterCount = 0;
@@ -78,7 +78,7 @@ void setup() {
   interVal = preferences.getInt("interVal", 5000);
   interValSwitch = preferences.getInt("interValSwitch", 0);
   bShutter = preferences.getInt("bShutter", 0);
-  selfieDelay = preferences.getInt("selfieDelay", 0);
+  inputMode = preferences.getInt("inputMode", 0);
 
   buttonA.begin(BUTTON_A_PIN,INPUT_PULLUP);
   buttonA.setClickHandler(handler);
@@ -89,7 +89,9 @@ void setup() {
   buttonB.setPressedHandler(pressed);
   buttonB.setReleasedHandler(released);  
 
-  attachInterrupt(INPUT_PIN,inputTrigger,FALLING);
+  //attachInterrupt(INPUT_PIN,inputTrigger,FALLING);
+
+  setInputInterrupt(inputMode);
 
   //initBLE();
 
@@ -101,6 +103,7 @@ void setup() {
 
 void unPressShutter(){
   digitalWrite(shutterS1,HIGH);
+  digitalWrite(shutterS2,HIGH);
   if(mode == 0){
     strip.SetPixelColor(0, blue);
     strip.Show();
@@ -116,7 +119,8 @@ void triggerShutter(){
   strip.SetPixelColor(0, red);
   strip.Show();
   digitalWrite(shutterS1,LOW);
-  triggerTimer.once_ms(100,unPressShutter);
+  digitalWrite(shutterS2,LOW);
+  triggerTimer.once_ms(200,unPressShutter);
   bleTriggerShutter();
   shutterCount++;
 }
@@ -127,7 +131,7 @@ void inputTrigger(){
   static unsigned long last_interrupt_time = 0;
   unsigned long interrupt_time = millis();
   // If interrupts come faster than 200ms, assume it's a bounce and ignore
-  if (interrupt_time - last_interrupt_time > 100) 
+  if (interrupt_time - last_interrupt_time > 200) 
   {
     if(mode == 0){
     Serial.println("Input Triggered");
@@ -150,23 +154,28 @@ void loop() {
   tickScreen();
   buttonA.loop();
   buttonB.loop();
-  if(mode == 0){
+  if(mode == 0){  //输入触发模式
     
   }
-  if(mode == 1){
+  if(mode == 1){  //Schedule模式
     //更新倒计时
-    leftSec = ((interVal - (millis() - time_now))+999)/1000;
-   // Serial.println(leftSec);
-    if(leftSec < 3){
-      strip.SetPixelColor(0, yellow);
-      strip.Show();
-    }
-    if(millis() - time_now > interVal){
-      time_now = millis();
-      triggerShutter();
+    if(interValSwitch == 0){
+        leftSec = interVal;
+      }
+    else{
+      leftSec = ((interVal - (millis() - time_now))+999)/1000;
+     // Serial.println(leftSec);
+      if(leftSec < 3){
+        strip.SetPixelColor(0, yellow);
+        strip.Show();
+      }
+      if(millis() - time_now > interVal){
+        time_now = millis();
+        triggerShutter();
+      }
     }
   }
-  if(mode == 2){   
+  if(mode == 2){   //无线遥控模式
     if(bShutter == 1){
       digitalWrite(shutterS1,LOW);    
       strip.SetPixelColor(0, red);
@@ -258,10 +267,32 @@ void pressed(Button2& btn) {
   }
 }
 
+void changeInterrupt(int inputMode){   //0 FALLING  //1 RISING //2 LOW  //3 HIGH  //4 CHANGE
+    detachInterrupt(INPUT_PIN);
+    setInputInterrupt(inputMode);
+    preferences.putInt("inputMode", inputMode);  
+ }
+
+void setInputInterrupt(int input){
+    if(inputMode == 0){
+      attachInterrupt(INPUT_PIN,inputTrigger,FALLING);
+    }
+    if(inputMode == 1){
+      attachInterrupt(INPUT_PIN,inputTrigger,RISING);
+    }
+    if(inputMode == 2){
+      attachInterrupt(INPUT_PIN,inputTrigger,LOW);  
+    }
+    if(inputMode == 3){
+      attachInterrupt(INPUT_PIN,inputTrigger,HIGH);  
+    }
+    if(inputMode == 4){
+      attachInterrupt(INPUT_PIN,inputTrigger,CHANGE);  
+    }
+  }
 
 /////////////////////////////////////////////////////////////////
 
 void released(Button2& btn) {
   counter--;
 }
-
