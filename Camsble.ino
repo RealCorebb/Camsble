@@ -231,9 +231,19 @@ void handler(Button2& btn) {
     switch (btn.getClickType()) {
         case SINGLE_CLICK:
             if (btn == buttonA) {
-              
+              switch(mode):
+                case 0:
+                  triggerTimes = triggerTimes - 1;
+                  if(triggerTimes < 1) triggerTimes = 1;
+                  preferences.putInt("triggerTimes", triggerTimes);  
+                  break;
+                  
             } else if (btn == buttonB) {
-              
+                switch(mode):
+                  case 0:
+                    triggerTimes = triggerTimes + 1;
+                    preferences.putInt("triggerTimes", triggerTimes);  
+                    break;
             }
             break;
         case DOUBLE_CLICK:
@@ -247,6 +257,22 @@ void handler(Button2& btn) {
             Serial.print("triple ");
             break;
         case LONG_CLICK:
+          if (btn == buttonA) {
+              switch(mode):
+                case 0:
+                  inputMode = inputMode - 1;
+                  if(inputMode)<0 inputMode = 4;
+                  changeInterrupt(inputMode);
+                  break;
+                  
+            } else if (btn == buttonB) {
+                switch(mode):
+                  case 0:
+                    inputMode = inputMode + 1;
+                    if(inputMode)>4 inputMode = 0;
+                    changeInterrupt(inputMode);
+                    break;
+            }
             break;
     }
 }
@@ -301,6 +327,7 @@ void setInputInterrupt(int input){
       attachInterrupt(INPUT_PIN,inputTrigger,CHANGE);  
     }
   }
+
 
 /////////////////////////////////////////////////////////////////
 
