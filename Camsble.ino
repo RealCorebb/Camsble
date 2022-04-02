@@ -27,11 +27,13 @@ int leftSec = 0;
 int shutterCount = 0;
 int isBLEEnable = 0;
 byte counter = 0;
+int changeInterValStep = 0;
 
 Ticker delayTimer;
 Ticker triggerTimer;
 Ticker scheduleTimer;
 Ticker batteryTimer;
+Ticker cinterValTimer;
 
 Button2 buttonA, buttonB;
 //EasyButton inputScreen(7,35,false,true);
@@ -97,6 +99,7 @@ void setup() {
   //initBLE();
   readBattery();
   batteryTimer.attach_ms(60000, readBattery);
+  cinterValTimer.attach_ms(150,changeInterval);
   initScreen();
   Serial.println("Setup Done");
   Serial.println(mode);
@@ -278,6 +281,8 @@ void handler(Button2& btn) {
                   if(inputMode <0) inputMode = 4;
                   changeInterrupt(inputMode);
                   break;
+                case 1:
+                  changeInterValStep = -1;
               }
                   
             } else if (btn == buttonB) {
@@ -287,6 +292,8 @@ void handler(Button2& btn) {
                     if(inputMode >4 ) inputMode = 0;
                     changeInterrupt(inputMode);
                     break;
+                  case 1:
+                    changeInterValStep = 1;
                 }
             }
             break;
@@ -318,9 +325,6 @@ void pressed(Button2& btn) {
   if (counter == 2) {
     changeBLE();
   }
-  if (mode == 1){
-      
-  }
 }
 
 void changeInterrupt(int inputMode){   //0 FALLING  //1 RISING //2 LOW  //3 HIGH  //4 CHANGE
@@ -347,9 +351,16 @@ void setInputInterrupt(int input){
     }
   }
 
-
+void changeInterval(){
+      int lastInterVal = interVal;
+      interVal = interVal + changeInterValStep;
+      if(lastInterVal != interVal){
+        preferences.putInt("interVal", interVal);  
+      }
+  }
 /////////////////////////////////////////////////////////////////
 
 void released(Button2& btn) {
   counter--;
+  changeInterValStep = 0;
 }
