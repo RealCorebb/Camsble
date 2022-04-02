@@ -77,7 +77,7 @@ void setup() {
   triggerTimes = preferences.getInt("triggerTimes", 1);
   triggerDelay = preferences.getInt("triggerDelay", 0);
   interVal = preferences.getInt("interVal", 5000);
-  interValSwitch = preferences.getInt("interValSwitch", 0);
+  interValSwitch = preferences.getInt("interValSwitch", 1);
   bShutter = preferences.getInt("bShutter", 0);
   inputMode = preferences.getInt("inputMode", 0);
 
@@ -231,19 +231,33 @@ void handler(Button2& btn) {
     switch (btn.getClickType()) {
         case SINGLE_CLICK:
             if (btn == buttonA) {
-              switch(mode):
+              switch(mode){
                 case 0:
                   triggerTimes = triggerTimes - 1;
                   if(triggerTimes < 1) triggerTimes = 1;
                   preferences.putInt("triggerTimes", triggerTimes);  
                   break;
+                case 1:
+                  interValSwitch = 0;
+                  preferences.putInt("interValSwitch", 0);  
+                  break;
+                case 2:
+                  inputTrigger();
+              }
                   
             } else if (btn == buttonB) {
-                switch(mode):
+                switch(mode){
                   case 0:
                     triggerTimes = triggerTimes + 1;
                     preferences.putInt("triggerTimes", triggerTimes);  
                     break;
+                  case 1:
+                    interValSwitch = 1;
+                    preferences.putInt("interValSwitch", 1);  
+                    break;
+                  case 2:
+                    inputTrigger();
+                }
             }
             break;
         case DOUBLE_CLICK:
@@ -258,20 +272,22 @@ void handler(Button2& btn) {
             break;
         case LONG_CLICK:
           if (btn == buttonA) {
-              switch(mode):
+              switch(mode){
                 case 0:
                   inputMode = inputMode - 1;
-                  if(inputMode)<0 inputMode = 4;
+                  if(inputMode <0) inputMode = 4;
                   changeInterrupt(inputMode);
                   break;
+              }
                   
             } else if (btn == buttonB) {
-                switch(mode):
+                switch(mode){
                   case 0:
                     inputMode = inputMode + 1;
-                    if(inputMode)>4 inputMode = 0;
+                    if(inputMode >4 ) inputMode = 0;
                     changeInterrupt(inputMode);
                     break;
+                }
             }
             break;
     }
@@ -301,6 +317,9 @@ void pressed(Button2& btn) {
   counter++;
   if (counter == 2) {
     changeBLE();
+  }
+  if (mode == 1){
+      
   }
 }
 
