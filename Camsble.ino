@@ -83,10 +83,14 @@ void setup() {
   bShutter = preferences.getInt("bShutter", 0);
   inputMode = preferences.getInt("inputMode", 0);
 
-  buttonA.begin(BUTTON_A_PIN,INPUT_PULLUP);
+  buttonA.begin(BUTTON_A_PIN,INPUT_PULLUP,false);
   buttonA.setClickHandler(handler);
-  buttonB.begin(BUTTON_B_PIN,INPUT_PULLUP);
+  buttonB.begin(BUTTON_B_PIN,INPUT_PULLUP,false);
   buttonB.setClickHandler(handler);
+  buttonA.setDoubleClickHandler(handler);
+  buttonB.setDoubleClickHandler(handler);
+  buttonA.setLongClickHandler(handler);
+  buttonB.setLongClickHandler(handler);
   buttonA.setPressedHandler(pressed);
   buttonA.setReleasedHandler(released);
   buttonB.setPressedHandler(pressed);
@@ -231,8 +235,8 @@ void readBattery(){
 
 void handler(Button2& btn) {
     Serial.println("Button Click");
-    switch (btn.getClickType()) {
-        case SINGLE_CLICK:
+    switch (btn.getType()) {
+        case single_click:
             if (btn == buttonA) {
               switch(mode){
                 case 0:
@@ -263,17 +267,17 @@ void handler(Button2& btn) {
                 }
             }
             break;
-        case DOUBLE_CLICK:
+        case double_click:
             if (btn == buttonA) {
               prevPage();
             } else if (btn == buttonB) {
               nextPage();
             }
             break;
-        case TRIPLE_CLICK:
+        case triple_click:
             Serial.print("triple ");
             break;
-        case LONG_CLICK:
+        case long_click:
           if (btn == buttonA) {
               switch(mode){
                 case 0:
@@ -328,6 +332,8 @@ void pressed(Button2& btn) {
 }
 
 void changeInterrupt(int inputMode){   //0 FALLING  //1 RISING //2 LOW  //3 HIGH  //4 CHANGE
+    Serial.print("Change Interrupt to:");
+    Serial.println(inputMode);
     detachInterrupt(INPUT_PIN);
     setInputInterrupt(inputMode);
     preferences.putInt("inputMode", inputMode);  
