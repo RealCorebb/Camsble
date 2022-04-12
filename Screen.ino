@@ -8,6 +8,23 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   display->drawString(96, 30,String(triggerTimes));
   display->setFont(ArialMT_Plain_24);
   display->drawString(89,23,String("/"));
+  switch (inputMode) {
+        case 0:
+          display->drawXbm(x + 34, y + 18, subMode_Logo_width, subMode_Logo_height, Falling_bits);
+          break;
+        case 1:
+          display->drawXbm(x + 34, y + 18, subMode_Logo_width, subMode_Logo_height, Rising_bits);
+          break;
+        case 2:
+          display->drawXbm(x + 34, y + 18, subMode_Logo_width, subMode_Logo_height, Low_bits);
+          break;
+        case 3:
+          display->drawXbm(x + 34, y + 18, subMode_Logo_width, subMode_Logo_height, High_bits);
+          break;
+        case 4:
+          display->drawXbm(x + 34, y + 18, subMode_Logo_width, subMode_Logo_height, Change_bits);
+          break;
+  }
 }
 void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   display->drawXbm(x + 30, y + 14, Mode_Logo_width, Mode_Logo_height, Mode_schedule_bits);
@@ -27,6 +44,9 @@ void msOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   }
   else{
     display->drawString(42, 54,String(shutterCount));
+  }
+  if(isBLEEnable == 1){
+    display->drawXbm(32, 10, Icon_width, Icon_height, BLE_bits); 
   }
 }
 FrameCallback frames[] = { drawFrame1,drawFrame2,drawFrame3 };

@@ -250,6 +250,7 @@ void handler(Button2& btn) {
                   break;
                 case 2:
                   inputTrigger();
+                  break;
               }
                   
             } else if (btn == buttonB) {
@@ -264,6 +265,7 @@ void handler(Button2& btn) {
                     break;
                   case 2:
                     inputTrigger();
+                    break;
                 }
             }
             break;
@@ -287,6 +289,7 @@ void handler(Button2& btn) {
                   break;
                 case 1:
                   changeInterValStep = -1;
+                  break;
               }
                   
             } else if (btn == buttonB) {
@@ -298,6 +301,7 @@ void handler(Button2& btn) {
                     break;
                   case 1:
                     changeInterValStep = 1;
+                    break;
                 }
             }
             break;
