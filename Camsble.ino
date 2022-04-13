@@ -89,8 +89,8 @@ void setup() {
   buttonB.setClickHandler(handler);
   buttonA.setDoubleClickHandler(handler);
   buttonB.setDoubleClickHandler(handler);
-  buttonA.setLongClickHandler(handler);
-  buttonB.setLongClickHandler(handler);
+  buttonA.setLongClickDetectedHandler(handler);
+  buttonB.setLongClickDetectedHandler(handler);
   buttonA.setPressedHandler(pressed);
   buttonA.setReleasedHandler(released);
   buttonB.setPressedHandler(pressed);
