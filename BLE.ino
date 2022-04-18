@@ -215,19 +215,14 @@ uint8_t buttons = 0;
 void bleTriggerShutter(){
   if(isConnected){
     Serial.println("BLE Trigger Shutter");
-  
-    const char* hello = "\n";
-    while(*hello){
-      KEYMAP map = keymap[(uint8_t)*hello];
-      uint8_t msg[] = {map.modifier || buttons, 0x0, map.usage, 0x0,0x0,0x0,0x0,0x0};
-      input->setValue(msg,sizeof(msg));
-      input->notify();
-      hello++;
-      uint8_t msg1[] = {0x0, 0x0, 0x0, 0x0,0x0,0x0,0x0,0x0};
 
+      uint8_t msg[] = {0x0, 0x0, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0};
+      input->setValue(msg, sizeof(msg));
+      input->notify();
+      uint8_t msg1[] = {0x0, 0x0, 0x0, 0x0,0x0,0x0,0x0,0x0};
       input->setValue(msg1,sizeof(msg1));
       input->notify();
-    }  
+
   }
 }
 
@@ -287,7 +282,7 @@ void initBLE(){
 
   output->setCallbacks(new MyOutputCallbacks());
 
-  std::string name = "ElectronicCats";
+  std::string name = "bbCamsble";
   hid->manufacturer()->setValue(name);
 
   hid->pnp(0x02, 0xe502, 0xa111, 0x0210);

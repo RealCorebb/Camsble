@@ -58,7 +58,7 @@ RgbColor black(0);
 //-------------------
 
 void setup() {
-  setCpuFrequencyMhz(80);
+  //setCpuFrequencyMhz(80);
   Serial.println("initScreen Done");
   strip.Begin();
   strip.SetPixelColor(0, blue);
@@ -169,7 +169,7 @@ void loop() {
   if(mode == 1){  //Schedule模式
     //更新倒计时
     if(interValSwitch == 0){
-        leftSec = interVal;
+        leftSec = interVal/1000;
       }
     else{
       leftSec = ((interVal - (millis() - time_now))+999)/1000;
@@ -280,6 +280,7 @@ void handler(Button2& btn) {
             Serial.print("triple ");
             break;
         case long_click:
+          Serial.println("long click");
           if (btn == buttonA) {
               switch(mode){
                 case 0:
@@ -288,7 +289,7 @@ void handler(Button2& btn) {
                   changeInterrupt(inputMode);
                   break;
                 case 1:
-                  changeInterValStep = -1;
+                  changeInterValStep = -1000;
                   break;
               }
                   
@@ -300,7 +301,7 @@ void handler(Button2& btn) {
                     changeInterrupt(inputMode);
                     break;
                   case 1:
-                    changeInterValStep = 1;
+                    changeInterValStep = 1000;
                     break;
                 }
             }
