@@ -4,10 +4,18 @@
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   display->drawXbm(x + 30, y + 14, Mode_Logo_width, Mode_Logo_height, Mode_input_bits);
   display->setFont(ArialMT_Plain_16);
-  display->drawString(84,24,String(triggerCount));
-  display->drawString(96, 30,String(triggerTimes));
-  display->setFont(ArialMT_Plain_24);
-  display->drawString(89,23,String("/"));
+  if(inputMode != 2 && inputMode !=3){
+    display->drawString(84,24,String(triggerCount));
+    if(triggerTimes > 9) display->drawString(98, 30,String(triggerTimes));
+    else display->drawString(96, 30,String(triggerTimes));
+    display->setFont(ArialMT_Plain_24);
+    display->drawString(89,23,String("/"));
+  }
+  else{
+    display->setFont(ArialMT_Plain_24);
+    if(inputMode == 2) display->drawString(89,21,"*");
+    if(inputMode == 3) display->drawString(89,21,"*");
+   }
   switch (inputMode) {
         case 0:
           display->drawXbm(x + 83, y + 48, subMode_Logo_width, subMode_Logo_height, Falling_bits);

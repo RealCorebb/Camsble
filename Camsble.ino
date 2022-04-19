@@ -124,7 +124,7 @@ void unPressShutter(){
 }
 
 void triggerShutter(){  
-  Serial.println("Shutter Triggered");
+  //Serial.println("Shutter Triggered");
   strip.SetPixelColor(0, red);
   strip.Show();
   digitalWrite(shutterS1,LOW);
@@ -134,29 +134,37 @@ void triggerShutter(){
   shutterCount++;
 }
 
+void holdShutter(){
+  strip.SetPixelColor(0, red);
+  strip.Show();
+  digitalWrite(shutterS1,LOW);
+  digitalWrite(shutterS2,LOW);
+  bleTriggerShutter();
+  strip.SetPixelColor(0, red);
+  strip.Show();
+}
+
 
 int triggerCount = 0;
+
+long debouncing_time = 250; //Debouncing Time in Milliseconds
+volatile unsigned long last_micros;
 void inputTrigger(){
-  static unsigned long last_interrupt_time = 0;
-  unsigned long interrupt_time = millis();
-  // If interrupts come faster than 200ms, assume it's a bounce and ignore
-  if (interrupt_time - last_interrupt_time > 200) 
-  {
+
+  if((long)(micros() - last_micros) >= debouncing_time * 1000) {
     if(mode == 0){
-    Serial.println("Input Triggered");
-    triggerCount++;
-    if(triggerCount >= triggerTimes){
-      delayTimer.once_ms(triggerDelay,triggerShutter);
-      triggerCount = 0;
+      triggerCount++;
+      if(triggerCount >= triggerTimes){
+        delayTimer.once_ms(triggerDelay,triggerShutter);
+        triggerCount = 0;
+      }
     }
+    last_micros = micros();
   }
-  }
-  last_interrupt_time = interrupt_time;
-  
 }
 
 unsigned long time_now = 0;
-
+bool isHolding = false;
 void loop() {
   //Serial.println("loop");
   
@@ -164,7 +172,34 @@ void loop() {
   buttonA.loop();
   buttonB.loop();
   if(mode == 0){  //输入触发模式
-    
+    if(inputMode == 2){ //LOW
+        if(digitalRead(INPUT_PIN) == LOW){
+            if(!isHolding){
+              holdShutter();
+              isHolding = true;
+            }
+          }
+         else{
+            if(isHolding){
+              unPressShutter();
+              isHolding =false;
+            }
+          }
+      }
+     if(inputMode == 3){ //LOW
+        if(digitalRead(INPUT_PIN) == HIGH){
+            if(!isHolding){
+              holdShutter();
+              isHolding = true;
+            }
+          }
+         else{
+            if(isHolding){
+              unPressShutter();
+              isHolding =false;
+            }
+          }
+      }
   }
   if(mode == 1){  //Schedule模式
     //更新倒计时
@@ -340,6 +375,8 @@ void changeInterrupt(int inputMode){   //0 FALLING  //1 RISING //2 LOW  //3 HIGH
     Serial.print("Change Interrupt to:");
     Serial.println(inputMode);
     detachInterrupt(INPUT_PIN);
+    unPressShutter();
+    isHolding =false;
     setInputInterrupt(inputMode);
     preferences.putInt("inputMode", inputMode);  
  }
@@ -350,12 +387,6 @@ void setInputInterrupt(int input){
     }
     if(inputMode == 1){
       attachInterrupt(INPUT_PIN,inputTrigger,RISING);
-    }
-    if(inputMode == 2){
-      attachInterrupt(INPUT_PIN,inputTrigger,LOW);  
-    }
-    if(inputMode == 3){
-      attachInterrupt(INPUT_PIN,inputTrigger,HIGH);  
     }
     if(inputMode == 4){
       attachInterrupt(INPUT_PIN,inputTrigger,CHANGE);  

@@ -187,7 +187,8 @@ static const uint8_t hidReportDescriptor[] = {
         LOGICAL_MAXIMUM(2), 0x3c, 0x02,    //   LOGICAL_MAXIMUM (1)
         REPORT_SIZE(1),     0x10,          //   REPORT_SIZE (1)
         REPORT_COUNT(1),    0x10,          //   REPORT_COUNT (16)
-        HIDINPUT(1),        0x00,          //   INPUT (Data,Var,Ab
+        HIDINPUT(1),        0x00,          //   INPUT (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+        END_COLLECTION(0)                  // END_COLLECTION
     };
 
 uint8_t buttons = 0;
