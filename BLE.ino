@@ -24,9 +24,9 @@ esp_ota_handle_t otaHandler = 0;
 bool updateFlag = false;
 bool readyFlag = false;
 
-#define SOFTWARE_VERSION_MAJOR 0
-#define SOFTWARE_VERSION_MINOR 1
-#define SOFTWARE_VERSION_PATCH 3
+#define SOFTWARE_VERSION_MAJOR 1
+#define SOFTWARE_VERSION_MINOR 2
+#define SOFTWARE_VERSION_PATCH 1
 #define HARDWARE_VERSION_MAJOR 1
 #define HARDWARE_VERSION_MINOR 2
 #define SERVICE_UUID_ESPOTA        "d804b643-6ce7-4e81-9f8a-ce0f699085eb"
