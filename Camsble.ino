@@ -9,8 +9,8 @@ Preferences preferences;
 #define shutterS1 10
 #define shutterS2 5
 
-#define BUTTON_A_PIN  0
-#define BUTTON_B_PIN  1
+#define BUTTON_A_PIN  1
+#define BUTTON_B_PIN  0
 #define INPUT_PIN  3
 
 #define MAXPAGE 2
@@ -313,6 +313,7 @@ void handler(Button2& btn) {
             break;
         case triple_click:
             Serial.print("triple ");
+            changeBLE();
             break;
         case long_click:
           Serial.println("long click");
@@ -326,6 +327,8 @@ void handler(Button2& btn) {
                 case 1:
                   changeInterValStep = -1000;
                   break;
+                case 2:
+                  changeBLE();
               }
                   
             } else if (btn == buttonB) {
@@ -338,6 +341,8 @@ void handler(Button2& btn) {
                   case 1:
                     changeInterValStep = 1000;
                     break;
+                  case 2:
+                    changeBLE();
                 }
             }
             break;
